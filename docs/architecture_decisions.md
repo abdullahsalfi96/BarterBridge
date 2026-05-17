@@ -57,3 +57,36 @@ in memory for near-instant access.
 Alternative considered: Storing sessions in PostgreSQL.
 Why rejected: Database session lookups on every API request
 add unnecessary load. Redis is built for this exact use case.
+
+---
+
+Decision 5: Why UUID Instead of Integer IDs
+
+Decision: All primary keys use UUID (Universally Unique Identifier),
+not auto-incrementing integers.
+
+Reason: Integer IDs expose business information.
+If your first trade has id=1 and your competitor's has id=50000,
+that tells the world about your scale.
+UUIDs also allow records to be created across multiple servers
+without ID collision — critical for horizontal scaling.
+
+Alternative considered: Auto-increment integers.
+Why rejected: Easy to enumerate (attacker guesses user IDs sequentially),
+reveals data volume, breaks in distributed systems.
+
+---
+
+
+Decision 6: Why a Separate Location Table
+
+Decision: Location is its own table, not embedded in Listing.
+
+Reason: Multiple listings can share the same city.
+Storing "Lahore, Punjab, Pakistan" as text in every listing
+wastes space and makes location-based queries slow.
+One Location row is referenced by many Listings — normalized data.
+
+Alternative considered: Store city/country as plain text in Listing.
+Why rejected: Breaks normalization. Makes geospatial queries harder.
+Duplicate data causes inconsistency when a city name needs updating.
